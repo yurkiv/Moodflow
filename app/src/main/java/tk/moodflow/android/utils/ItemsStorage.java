@@ -1,10 +1,5 @@
 package tk.moodflow.android.utils;
 
-import android.content.Context;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.support.v7.graphics.Palette;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,15 +10,12 @@ import tk.moodflow.android.model.SoundItem;
  * Created by yurkiv on 21.05.2015.
  */
 public class ItemsStorage {
-    private Context context;
     private List<SoundItem> moods;
     private List<SoundItem> genres;
 
-    public ItemsStorage(Context context) {
-        this.context=context;
+    public ItemsStorage() {
         moods=new ArrayList<>();
         genres=new ArrayList<>();
-
         generateGenres();
         generateMoods();
     }
@@ -81,16 +73,6 @@ public class ItemsStorage {
         genres.add(item);
         item=new SoundItem("Trance", R.drawable.trance);
         genres.add(item);
-
-        for (final SoundItem soundItem: genres){
-            Palette.generateAsync(BitmapFactory.decodeResource(context.getResources(), soundItem.getImage()),
-                    32, new Palette.PaletteAsyncListener() {
-                        @Override
-                        public void onGenerated(Palette palette) {
-                            soundItem.setPaletteColor(palette.getVibrantColor(Color.LTGRAY));
-                        }
-                    });
-        }
     }
 
     private void generateMoods(){
@@ -236,17 +218,5 @@ public class ItemsStorage {
         moods.add(item);
         item=new SoundItem("Writing", R.drawable.writing);
         moods.add(item);
-
-        for (final SoundItem soundItem: moods){
-            Palette.generate(BitmapFactory.decodeResource(context.getResources(), soundItem.getImage()));
-            Palette.generateAsync(BitmapFactory.decodeResource(context.getResources(), soundItem.getImage()),
-                    32, new Palette.PaletteAsyncListener() {
-                        @Override
-                        public void onGenerated(Palette palette) {
-                            soundItem.setPaletteColor(palette.getVibrantColor(Color.LTGRAY));
-                        }
-                    });
-        }
-
     }
 }

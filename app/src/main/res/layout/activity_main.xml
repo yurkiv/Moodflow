@@ -14,15 +14,14 @@
         android:background="@color/primary"
         />
 
-
-    <it.neokree.materialtabs.MaterialTabHost
+    <io.karim.MaterialTabs
         android:id="@+id/tabHost"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_below="@+id/toolbar"
-        app:primaryColor="@color/primary"
-        app:accentColor="@color/accent" />
-
+        android:background="@color/primary"
+        app:mtSameWeightTabs="true"
+        app:mtPaddingMiddle="false" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"

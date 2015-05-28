@@ -31,9 +31,7 @@ import java.util.Random;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import it.neokree.materialtabs.MaterialTab;
-import it.neokree.materialtabs.MaterialTabHost;
-import it.neokree.materialtabs.MaterialTabListener;
+import io.karim.MaterialTabs;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -53,13 +51,11 @@ import tk.moodflow.android.utils.ItemsStorage;
 /**
  * Created by yurkiv on 21.05.2015.
  */
-public class MainActivity extends AppCompatActivity implements MaterialTabListener,
-        MoodsFragment.OnMoodSelectionListener, GenresFragment.OnGenreSelectionListener,
-        MediaPlayer.OnCompletionListener {
+public class MainActivity extends AppCompatActivity implements MoodsFragment.OnMoodSelectionListener,
+        GenresFragment.OnGenreSelectionListener, MediaPlayer.OnCompletionListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private ViewPagerAdapter adapter;
     private ItemsStorage itemsStorage;
     private List<SoundItem> genres;
     private List<SoundItem> moods;
@@ -69,10 +65,8 @@ public class MainActivity extends AppCompatActivity implements MaterialTabListen
     private AudioManager audioManager;
     private AudioFocusListener audioFocusListener;
 
-    private GenresFragment genresFragment;
-
     @InjectView(R.id.toolbar) protected Toolbar toolbar;
-    @InjectView(R.id.tabHost) protected MaterialTabHost tabHost;
+    @InjectView(R.id.tabHost) protected MaterialTabs tabHost;
     @InjectView(R.id.pager) protected ViewPager pager;
     @InjectView(R.id.play_pause_view) protected PlayPauseView play_pause_view;
     @InjectView(R.id.bt_next_track) protected FloatingActionButton btNextTrack;
@@ -87,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements MaterialTabListen
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
 
-        itemsStorage=new ItemsStorage(this);
+        itemsStorage=new ItemsStorage();
         genres=itemsStorage.getGenres();
         moods=itemsStorage.getMoods();
         tracks = new ArrayList<>();
@@ -97,20 +91,8 @@ public class MainActivity extends AppCompatActivity implements MaterialTabListen
         }
         play_pause_view.setPlay(false);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
-        adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        pager.setAdapter(adapter);
-        pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                tabHost.setSelectedNavigationItem(position);
-            }
-        });
-        for (int i = 0; i < adapter.getCount(); i++) {
-            tabHost.addTab(tabHost.newTab()
-                            .setText(adapter.getPageTitle(i))
-                            .setTabListener(this)
-            );
-        }
+        pager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
+        tabHost.setViewPager(pager);
 
         mp = new MediaPlayer();
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -278,17 +260,6 @@ public class MainActivity extends AppCompatActivity implements MaterialTabListen
     }
 
     @Override
-    public void onTabSelected(MaterialTab materialTab) {
-        pager.setCurrentItem(materialTab.getPosition());
-    }
-
-    @Override
-    public void onTabReselected(MaterialTab materialTab) {}
-
-    @Override
-    public void onTabUnselected(MaterialTab materialTab) {}
-
-    @Override
     public void onGenreSelected(int id) {
         loadGenre(id);
     }
@@ -309,12 +280,11 @@ public class MainActivity extends AppCompatActivity implements MaterialTabListen
         }
 
         public Fragment getItem(int position) {
-            genresFragment=GenresFragment.newInstance(genres);
             switch (position) {
                 case 0:
-                    return genresFragment;
+                    return GenresFragment.newInstance(genres);
                 case 1:
-                    return MoodsFragment.newInstance(itemsStorage.getMoods());
+                    return MoodsFragment.newInstance(moods);
                 default:
                     return null;
             }

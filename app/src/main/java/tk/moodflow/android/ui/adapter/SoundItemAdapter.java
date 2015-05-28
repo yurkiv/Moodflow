@@ -1,19 +1,22 @@
 package tk.moodflow.android.ui.adapter;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.widget.TextView;
 
 import com.joooonho.SelectableRoundedImageView;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import butterknife.ButterKnife;
@@ -25,9 +28,17 @@ import tk.moodflow.android.model.SoundItem;
  * Created by yurkiv on 21.05.2015.
  */
 public class SoundItemAdapter extends RecyclerView.Adapter<SoundItemAdapter.ViewHolder> {
+
+    private static final int MAX_PHOTO_ANIMATION_DELAY = 0;
+    private static final Interpolator INTERPOLATOR = new DecelerateInterpolator();
+
     private List<SoundItem> soundItems;
     private List<SoundItem> filteredSoundItems;
     private Context context;
+
+    private boolean lockedAnimations = false;
+    private long profileHeaderAnimationStartTime = 0;
+    private int lastAnimatedItem = 1;
 
     public SoundItemAdapter(Context context, List<SoundItem> soundItems) {
         this.context = context;
@@ -48,10 +59,19 @@ public class SoundItemAdapter extends RecyclerView.Adapter<SoundItemAdapter.View
 
     @Override
     public void onBindViewHolder(final SoundItemAdapter.ViewHolder holder, int position) {
-        SoundItem item= filteredSoundItems.get(position);
+        SoundItem item = filteredSoundItems.get(position);
         holder.tvSoundItemName.setText(item.getName());
         holder.ivSoundItem.setImageDrawable(ContextCompat.getDrawable(context, item.getImage()));
-        holder.tvSoundItemName.setBackgroundColor(item.getPaletteColor());
+
+        Palette.generateAsync(BitmapFactory.decodeResource(context.getResources(), item.getImage()),
+                32, new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        holder.tvSoundItemName.setBackgroundColor(palette.getVibrantColor(Color.LTGRAY));
+                        animateItemCard(holder);
+                    }
+                });
+        if (lastAnimatedItem < position) lastAnimatedItem = position;
     }
 
     public void flushFilter(){
@@ -70,77 +90,35 @@ public class SoundItemAdapter extends RecyclerView.Adapter<SoundItemAdapter.View
         notifyDataSetChanged();
     }
 
-//    @Override
-//    public Filter getFilter() {
-//        return new ItemFilter(this, soundItems);
-////        return new Filter() {
-////            @Override
-////            protected FilterResults performFiltering(CharSequence constraint) {
-////                final FilterResults filterResults=new FilterResults();
-////                final List<SoundItem> results=new ArrayList<>();
-////                if (filteredSoundItems==null){
-////                    filteredSoundItems=soundItems;
-////                }
-////                if (constraint!=null){
-////                    if (filteredSoundItems!=null & filteredSoundItems.size()>0){
-////                        for (final SoundItem item:filteredSoundItems){
-////                            if (item.getName().toLowerCase().contains(constraint.toString())){
-////                                results.add(item);
-////                            }
-////                        }
-////                    }
-////                    filterResults.values=results;
-////                }
-////                return filterResults;
-////            }
-////
-////            @Override
-////            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-////                filteredSoundItems= (List<SoundItem>) filterResults.values;
-////                notifyDataSetChanged();
-////            }
-////        };
-//    }
-
-    private static class ItemFilter extends Filter{
-
-        private final SoundItemAdapter adapter;
-        private final List<SoundItem> originalList;
-        private final List<SoundItem> filteredList;
-
-        public ItemFilter(SoundItemAdapter adapter, List<SoundItem> originalList) {
-            this.adapter = adapter;
-            this.originalList = new LinkedList<>(originalList);
-            this.filteredList = new ArrayList<>();
-        }
-
-        @Override
-        protected FilterResults performFiltering(CharSequence constraint) {
-            filteredList.clear();
-            final FilterResults results = new FilterResults();
-
-            if (constraint.length() == 0) {
-                filteredList.addAll(originalList);
-            } else {
-                final String filterPattern = constraint.toString().toLowerCase().trim();
-
-                for (final SoundItem item : originalList) {
-                    if (item.getName().contains(filterPattern)) {
-                        filteredList.add(item);
-                    }
-                }
+    private void animateItemCard(ViewHolder viewHolder) {
+        if (!lockedAnimations) {
+            if (lastAnimatedItem == viewHolder.getPosition()) {
+                setLockedAnimations(true);
             }
-            results.values = filteredList;
-            results.count = filteredList.size();
-            return results;
-        }
 
-        @Override
-        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            adapter.filteredSoundItems.clear();
-            adapter.filteredSoundItems.addAll((ArrayList<SoundItem>) filterResults.values);
-            adapter.notifyDataSetChanged();
+            long animationDelay = profileHeaderAnimationStartTime + MAX_PHOTO_ANIMATION_DELAY - System.currentTimeMillis();
+            if (profileHeaderAnimationStartTime == 0) {
+                animationDelay = viewHolder.getPosition() * 30 + MAX_PHOTO_ANIMATION_DELAY;
+            } else if (animationDelay < 0) {
+                animationDelay = viewHolder.getPosition() * 30;
+            } else {
+                animationDelay += viewHolder.getPosition() * 30;
+            }
+
+            viewHolder.cardView.setScaleY(0);
+            viewHolder.cardView.setScaleX(0);
+            viewHolder.cardView.animate()
+                    .scaleY(1)
+                    .scaleX(1)
+                    .setDuration(200)
+                    .setInterpolator(INTERPOLATOR)
+                    .setStartDelay(animationDelay)
+                    .start();
         }
+    }
+
+    public void setLockedAnimations(boolean lockedAnimations) {
+        this.lockedAnimations = lockedAnimations;
     }
 
     public final static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

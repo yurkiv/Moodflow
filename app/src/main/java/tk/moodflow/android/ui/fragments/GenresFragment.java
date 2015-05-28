@@ -66,6 +66,12 @@ public class GenresFragment extends Fragment {
 
         rvGenres.addItemDecoration(new MarginDecoration(getActivity()));
         rvGenres.setHasFixedSize(true);
+        rvGenres.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                genresAdapter.setLockedAnimations(true);
+            }
+        });
         rvGenres.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {

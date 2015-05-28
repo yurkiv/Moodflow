@@ -63,6 +63,12 @@ public class MoodsFragment extends Fragment {
         setHasOptionsMenu(true);
         rvMoods.addItemDecoration(new MarginDecoration(getActivity()));
         rvMoods.setHasFixedSize(true);
+        rvMoods.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                moodsAdapter.setLockedAnimations(true);
+            }
+        });
         rvMoods.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
