@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -26,39 +27,33 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import io.karim.MaterialTabs;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 import tk.moodflow.android.R;
 import tk.moodflow.android.api.CmdFm;
 import tk.moodflow.android.api.CmdFmService;
-import tk.moodflow.android.api.SoundCloud;
-import tk.moodflow.android.api.SoundCloudService;
-import tk.moodflow.android.model.SoundItem;
 import tk.moodflow.android.model.Track;
+import tk.moodflow.android.ui.fragments.FavouritesFragment;
 import tk.moodflow.android.ui.fragments.GenresFragment;
-import tk.moodflow.android.ui.fragments.MoodsFragment;
 import tk.moodflow.android.ui.view.PlayPauseView;
 import tk.moodflow.android.utils.AudioFocusListener;
-import tk.moodflow.android.utils.ItemsStorage;
 
 /**
  * Created by yurkiv on 21.05.2015.
  */
-public class MainActivity extends AppCompatActivity implements MoodsFragment.OnMoodSelectionListener,
+public class MainActivity extends AppCompatActivity implements FavouritesFragment.OnFavouritesSelectionListener,
         GenresFragment.OnGenreSelectionListener, MediaPlayer.OnCompletionListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private ItemsStorage itemsStorage;
-    private List<SoundItem> genres;
-    private List<SoundItem> moods;
+    private List<String> genres;
     private List<Track> tracks;
     private MediaPlayer mp;
     private NotificationManager notificationManager;
@@ -66,8 +61,8 @@ public class MainActivity extends AppCompatActivity implements MoodsFragment.OnM
     private AudioFocusListener audioFocusListener;
 
     @InjectView(R.id.toolbar) protected Toolbar toolbar;
-    @InjectView(R.id.tabHost) protected MaterialTabs tabHost;
-    @InjectView(R.id.pager) protected ViewPager pager;
+    @InjectView(R.id.tabLayout) protected TabLayout tabLayout;
+    @InjectView(R.id.viewPager) protected ViewPager viewPager;
     @InjectView(R.id.play_pause_view) protected PlayPauseView play_pause_view;
     @InjectView(R.id.bt_next_track) protected FloatingActionButton btNextTrack;
     @InjectView(R.id.player_progress_bar) protected ProgressBar progressBar;
@@ -81,18 +76,18 @@ public class MainActivity extends AppCompatActivity implements MoodsFragment.OnM
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
 
-        itemsStorage=new ItemsStorage();
-        genres=itemsStorage.getGenres();
-        moods=itemsStorage.getMoods();
+        genres=getGenres();
         tracks = new ArrayList<>();
 
         if (toolbar!=null){
             setSupportActionBar(toolbar);
         }
+
+        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
+        tabLayout.setupWithViewPager(viewPager);
+
         play_pause_view.setPlay(false);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
-        pager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
-        tabHost.setViewPager(pager);
 
         mp = new MediaPlayer();
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -122,14 +117,14 @@ public class MainActivity extends AppCompatActivity implements MoodsFragment.OnM
         });
     }
 
-    private void loadGenre(final int id){
+    private void loadGenre(final String name){
         toggleProgressBar();
         CmdFmService cmdFmService = CmdFm.getService();
-        cmdFmService.getByGenre(genres.get(id).getName(), new Callback<List<Track>>() {
+        cmdFmService.getByGenre(name, new Callback<List<Track>>() {
             @Override
             public void success(List<Track> tracks, Response response) {
                 updateTracks(tracks);
-                itemName.setText(genres.get(id).getName());
+                itemName.setText(name);
                 playRandomSong();
             }
 
@@ -140,23 +135,6 @@ public class MainActivity extends AppCompatActivity implements MoodsFragment.OnM
         });
     }
 
-    private void loadMood(final int id){
-        toggleProgressBar();
-        SoundCloudService soundCloudService= SoundCloud.getService();
-        soundCloudService.getByTag(moods.get(id).getName(), new Callback<List<Track>>() {
-            @Override
-            public void success(List<Track> tracks, Response response) {
-                updateTracks(tracks);
-                itemName.setText(moods.get(id).getName());
-                playRandomSong();
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.d(TAG, "Failed call: " + error.toString());
-            }
-        });
-    }
 
     private void updateTracks(List<Track> tracks) {
         this.tracks.clear();
@@ -200,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements MoodsFragment.OnM
         toggleProgressBar();
 
         try {
-            mp.setDataSource(selectedTrack.getStreamURL() + "?client_id=" + SoundCloudService.CLIENT_ID);
+            mp.setDataSource(selectedTrack.getStreamURL() + "?client_id=" + CmdFmService.CLIENT_ID);
             mp.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
@@ -260,18 +238,27 @@ public class MainActivity extends AppCompatActivity implements MoodsFragment.OnM
     }
 
     @Override
-    public void onGenreSelected(int id) {
-        loadGenre(id);
+    public void onGenreSelected(String name) {
+        loadGenre(name);
     }
 
     @Override
-    public void onMoodSelected(int id) {
-        loadMood(id);
+    public void onMoodSelected(String name) {
+        loadGenre(name);
     }
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
         playRandomSong();
+    }
+
+    private List<String> getGenres(){
+        List<String> genreNames=Arrays.asList(new String[]{"80s", "Acid Jazz", "Acoustic", "Acoustic Rock", "African", "Alternative", "Alternative Rock", "Ambient", "Americana", "Arabic", "Audiobooks", "Avantgarde", "Bachata", "Bhangra", "Blues", "Blues Rock", "Bossa Nova", "Breakbeats", "Business", "Chanson", "Chillout", "Chillstep", "Chiptunes", "Choir", "Classical", "Classical Guitar", "Classic Rock", "Comedy", "Contemporary", "Country", "Cumbia", "Dance", "Dancehall", "Death Metal", "Deep House", "Dirty South", "Disco", "Dream Pop", "Drum & Bass", "Dub", "Dubstep", "Easy Listening", "Electro", "Electro House", "Electronic", "Electronica", "Electronic Pop", "Electronic Rock", "Entertainment", "Folk", "Folk Rock", "Funk", "Glitch", "Gospel", "Grime", "Grindcore", "Grunge", "Hardcore", "Hardcore Techno", "Hard Rock", "Heavy Metal", "Hip-Hop", "House", "Indie", "Indie Pop", "Indie Rock", "Industrial Metal", "Instrumental Rock", "Jazz", "Jazz Funk", "Jazz Fusion", "J-Pop", "K-Pop", "Latin", "Latin Jazz", "Learning", "Lounge", "Mambo", "Metal", "Metalcore", "Middle Eastern", "Minimal", "Minimal Techno", "Modern Jazz", "Moombahton", "News & Politics", "New Wave", "Nu Jazz", "Opera", "Orchestral", "Piano", "Pop", "Post Hardcore", "Post Rock", "Progressive House", "Progressive Metal", "Progressive Rock", "Punk", "Rap", "R&B", "Reggae", "Reggaeton", "Religion & Spirituality", "Riddim", "Rock", "Rock 'n' Roll", "Salsa", "Samba", "Science", "Shoegaze", "Singer / Songwriter", "Smooth Jazz", "Soul", "Sports", "Storytelling", "Synth Pop", "Tech House", "Techno", "Technology", "Thrash Metal", "Trance", "Trap", "Trip-hop", "Turntablism", "World"});
+        List<String> genres=new ArrayList<>(genreNames.size());
+        for (String s:genreNames){
+            genres.add(s);
+        }
+        return genres;
     }
 
     private class ViewPagerAdapter extends FragmentStatePagerAdapter {
@@ -284,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements MoodsFragment.OnM
                 case 0:
                     return GenresFragment.newInstance(genres);
                 case 1:
-                    return MoodsFragment.newInstance(moods);
+                    return FavouritesFragment.newInstance();
                 default:
                     return null;
             }
@@ -301,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements MoodsFragment.OnM
                 case 0:
                     return "Genres";
                 case 1:
-                    return "Moods";
+                    return "Favourites";
                 default:
                     return null;
             }

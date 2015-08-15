@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,10 +22,7 @@ import java.util.List;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import tk.moodflow.android.R;
-import tk.moodflow.android.model.SoundItem;
-import tk.moodflow.android.ui.adapter.SoundItemAdapter;
-import tk.moodflow.android.ui.view.MarginDecoration;
-import tk.moodflow.android.ui.view.RecyclerItemClickListener;
+import tk.moodflow.android.ui.adapter.GenresAdapter;
 
 public class GenresFragment extends Fragment {
 
@@ -31,11 +30,11 @@ public class GenresFragment extends Fragment {
 
     @InjectView(R.id.rvGenres) protected RecyclerView rvGenres;
 
-    private List<SoundItem> genres;
-    private SoundItemAdapter genresAdapter;
+    private List<String> genres;
+    private GenresAdapter genresAdapter;
     private OnGenreSelectionListener genreSelectionListener;
 
-    public static GenresFragment newInstance(List<SoundItem> genresList) {
+    public static GenresFragment newInstance(List<String> genresList) {
         GenresFragment fragment = new GenresFragment();
         Bundle args = new Bundle();
         args.putParcelable(GENRES_KEY, Parcels.wrap(genresList));
@@ -53,7 +52,8 @@ public class GenresFragment extends Fragment {
         if (getArguments() != null) {
             genres=Parcels.unwrap(getArguments().getParcelable(GENRES_KEY));
         }
-        genresAdapter=new SoundItemAdapter(getActivity(), genres);
+        genresAdapter=new GenresAdapter(getActivity(), genres);
+        Log.d("gf", "genres:" +genres);
     }
 
     @Override
@@ -64,23 +64,20 @@ public class GenresFragment extends Fragment {
         ButterKnife.inject(this, view);
         setHasOptionsMenu(true);
 
-        rvGenres.addItemDecoration(new MarginDecoration(getActivity()));
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        llm.setOrientation(LinearLayoutManager.VERTICAL);
+
         rvGenres.setHasFixedSize(true);
-        rvGenres.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        rvGenres.setLayoutManager(llm);
+        rvGenres.setAdapter(genresAdapter);
+        genresAdapter.setOnItemClickListener(new GenresAdapter.OnItemClickListener() {
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                genresAdapter.setLockedAnimations(true);
-            }
-        });
-        rvGenres.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
+            public void onItemClick(int position, View v) {
                 if (genreSelectionListener != null) {
-                    genreSelectionListener.onGenreSelected(position);
+                    genreSelectionListener.onGenreSelected(genresAdapter.getFilteredGenres().get(position));
                 }
             }
-        }));
-        rvGenres.setAdapter(genresAdapter);
+        });
 
         return view;
     }
@@ -117,9 +114,9 @@ public class GenresFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String query) {
                 if (query.isEmpty()){
-                    ((SoundItemAdapter) rvGenres.getAdapter()).flushFilter();
+                    ((GenresAdapter) rvGenres.getAdapter()).flushFilter();
                 } else {
-                    ((SoundItemAdapter) rvGenres.getAdapter()).setFilter(query);
+                    ((GenresAdapter) rvGenres.getAdapter()).setFilter(query);
                 }
                 return true;
             }
@@ -128,7 +125,7 @@ public class GenresFragment extends Fragment {
 
 
     public interface OnGenreSelectionListener {
-        public void onGenreSelected (int id);
+        public void onGenreSelected (String name);
     }
 
 }

@@ -1,9 +1,12 @@
 package tk.moodflow.android.ui.fragments;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,46 +16,39 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
 
-import org.parceler.Parcels;
-
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import tk.moodflow.android.R;
-import tk.moodflow.android.model.SoundItem;
-import tk.moodflow.android.ui.adapter.SoundItemAdapter;
-import tk.moodflow.android.ui.view.MarginDecoration;
-import tk.moodflow.android.ui.view.RecyclerItemClickListener;
+import tk.moodflow.android.ui.adapter.FavouritesAdapter;
+import tk.moodflow.android.ui.adapter.GenresAdapter;
 
-public class MoodsFragment extends Fragment {
-    private static final String MOODS_KEY = "moods";
+public class FavouritesFragment extends Fragment {
+    private static final String FAV_KEY = "fav";
 
-    @InjectView(R.id.rvMoods) protected RecyclerView rvMoods;
+    @InjectView(R.id.rvFavs) protected RecyclerView rvFavs;
 
-    private List<SoundItem> moods;
-    private SoundItemAdapter moodsAdapter;
-    private OnMoodSelectionListener moodSelectionListener;
+    private List<String> fav;
+    private FavouritesAdapter favAdapter;
+    private OnFavouritesSelectionListener vafSelectionListener;
 
-    public static MoodsFragment newInstance(List<SoundItem> moodsList) {
-        MoodsFragment fragment = new MoodsFragment();
+    public static FavouritesFragment newInstance() {
+        FavouritesFragment fragment = new FavouritesFragment();
         Bundle args = new Bundle();
-        args.putParcelable(MOODS_KEY, Parcels.wrap(moodsList));
         fragment.setArguments(args);
         return fragment;
     }
 
-    public MoodsFragment() {
+    public FavouritesFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            moods=Parcels.unwrap(getArguments().getParcelable(MOODS_KEY));
-        }
-        moodsAdapter=new SoundItemAdapter(getActivity(), moods);
+        favAdapter=new FavouritesAdapter(getActivity());
     }
 
     @Override
@@ -61,33 +57,40 @@ public class MoodsFragment extends Fragment {
         View view=inflater.inflate(R.layout.fragment_moods, container, false);
         ButterKnife.inject(this, view);
         setHasOptionsMenu(true);
-        rvMoods.addItemDecoration(new MarginDecoration(getActivity()));
-        rvMoods.setHasFixedSize(true);
-        rvMoods.setOnScrollListener(new RecyclerView.OnScrollListener() {
+
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        llm.setOrientation(LinearLayoutManager.VERTICAL);
+
+        rvFavs.setHasFixedSize(true);
+        rvFavs.setLayoutManager(llm);
+
+        rvFavs.setAdapter(favAdapter);
+        favAdapter.setOnItemClickListener(new FavouritesAdapter.OnItemClickListener() {
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                moodsAdapter.setLockedAnimations(true);
-            }
-        });
-        rvMoods.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                if (moodSelectionListener != null) {
-                    moodSelectionListener.onMoodSelected(position);
+            public void onItemClick(int position, View v) {
+                if (vafSelectionListener != null) {
+                    vafSelectionListener.onMoodSelected(favAdapter.getGenres().get(position));
                 }
             }
-        }));
-        rvMoods.setAdapter(moodsAdapter);
+        });
 
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+        fav=new ArrayList<>();
+//        favAdapter.notifyDataSetChanged();
+    }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            moodSelectionListener = (OnMoodSelectionListener) activity;
+            vafSelectionListener = (OnFavouritesSelectionListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -97,7 +100,7 @@ public class MoodsFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        moodSelectionListener = null;
+        vafSelectionListener = null;
     }
 
     @Override
@@ -115,17 +118,17 @@ public class MoodsFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String query) {
                 if (query.isEmpty()){
-                    ((SoundItemAdapter) rvMoods.getAdapter()).flushFilter();
+                    ((GenresAdapter) rvFavs.getAdapter()).flushFilter();
                 } else {
-                    ((SoundItemAdapter) rvMoods.getAdapter()).setFilter(query);
+                    ((GenresAdapter) rvFavs.getAdapter()).setFilter(query);
                 }
                 return true;
             }
         });
     }
 
-    public interface OnMoodSelectionListener {
-        public void onMoodSelected(int id);
+    public interface OnFavouritesSelectionListener {
+        public void onMoodSelected(String name);
     }
 
 }
