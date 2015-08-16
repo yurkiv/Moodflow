@@ -2,11 +2,10 @@ package tk.moodflow.android.ui;
 
 import android.app.NotificationManager;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,10 +18,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.melnykov.fab.FloatingActionButton;
+import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -59,13 +57,15 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
     private NotificationManager notificationManager;
     private AudioManager audioManager;
     private AudioFocusListener audioFocusListener;
+    private Track selectedTrack;
+    private String selectedGenre;
 
     @InjectView(R.id.toolbar) protected Toolbar toolbar;
     @InjectView(R.id.tabLayout) protected TabLayout tabLayout;
     @InjectView(R.id.viewPager) protected ViewPager viewPager;
     @InjectView(R.id.play_pause_view) protected PlayPauseView play_pause_view;
     @InjectView(R.id.bt_next_track) protected FloatingActionButton btNextTrack;
-    @InjectView(R.id.player_progress_bar) protected ProgressBar progressBar;
+    @InjectView(R.id.player_progress_bar) protected CircularProgressView progressBar;
     @InjectView(R.id.tv_title) protected TextView trackTitle;
     @InjectView(R.id.tv_item_name) protected TextView itemName;
     @InjectView(R.id.iv_thumbnail) protected ImageView ivThumbnail;
@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
+        play_pause_view.setPlay(false);
+        play_pause_view.setEnabled(false);
 
         genres=getGenres();
         tracks = new ArrayList<>();
@@ -85,9 +87,6 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
 
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
-
-        play_pause_view.setPlay(false);
-        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
 
         mp = new MediaPlayer();
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -125,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
             public void success(List<Track> tracks, Response response) {
                 updateTracks(tracks);
                 itemName.setText(name);
+                selectedGenre=name;
                 playRandomSong();
             }
 
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
     private void playRandomSong(){
         Random rand = new Random();
         int currentSongIndex = rand.nextInt((tracks.size() - 1) - 0 + 1) + 0;
-        Track selectedTrack = tracks.get(currentSongIndex);
+        selectedTrack = tracks.get(currentSongIndex);
         trackTitle.setText(selectedTrack.getTitle());
         Picasso.with(MainActivity.this).load(selectedTrack.getArtworkURL()).into(ivThumbnail);
 
