@@ -1,4 +1,4 @@
-package tk.moodflow.android.ui;
+package tk.genresbox.android.ui;
 
 import android.app.NotificationManager;
 import android.content.Context;
@@ -34,14 +34,14 @@ import butterknife.InjectView;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-import tk.moodflow.android.R;
-import tk.moodflow.android.api.CmdFm;
-import tk.moodflow.android.api.CmdFmService;
-import tk.moodflow.android.model.Track;
-import tk.moodflow.android.ui.fragments.FavouritesFragment;
-import tk.moodflow.android.ui.fragments.GenresFragment;
-import tk.moodflow.android.ui.view.PlayPauseView;
-import tk.moodflow.android.utils.AudioFocusListener;
+import tk.genresbox.android.R;
+import tk.genresbox.android.api.SoundcloudApi;
+import tk.genresbox.android.api.SoundcloudService;
+import tk.genresbox.android.model.Track;
+import tk.genresbox.android.ui.fragments.FavouritesFragment;
+import tk.genresbox.android.ui.fragments.GenresFragment;
+import tk.genresbox.android.ui.view.PlayPauseView;
+import tk.genresbox.android.utils.AudioFocusListener;
 
 /**
  * Created by yurkiv on 21.05.2015.
@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
     private AudioManager audioManager;
     private AudioFocusListener audioFocusListener;
     private Track selectedTrack;
-    private String selectedGenre;
 
     @InjectView(R.id.toolbar) protected Toolbar toolbar;
     @InjectView(R.id.tabLayout) protected TabLayout tabLayout;
@@ -120,13 +119,13 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
 
     private void loadGenre(final String name){
         toggleProgressBar();
-        CmdFmService cmdFmService = CmdFm.getService();
-        cmdFmService.getByGenre(name, new Callback<List<Track>>() {
+        SoundcloudService soundcloudService = SoundcloudApi.getService();
+        soundcloudService.getByGenre(name, new Callback<List<Track>>() {
             @Override
             public void success(List<Track> tracks, Response response) {
                 updateTracks(tracks);
+                play_pause_view.setEnabled(true);
                 itemName.setText(name);
-                selectedGenre=name;
                 playRandomSong();
             }
 
@@ -181,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
         toggleProgressBar();
 
         try {
-            mp.setDataSource(selectedTrack.getStreamURL() + "?client_id=" + CmdFmService.CLIENT_ID);
+            mp.setDataSource(selectedTrack.getStreamURL() + "?client_id=" + SoundcloudService.CLIENT_ID);
             mp.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,4 +1,4 @@
-package tk.moodflow.android.ui.adapter;
+package tk.genresbox.android.ui.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +20,7 @@ import java.util.Set;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import tk.moodflow.android.R;
+import tk.genresbox.android.R;
 
 /**
  * Created by yurkiv on 21.05.2015.
@@ -34,6 +35,8 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
     private SharedPreferences preferences;
     private static OnItemClickListener onItemClickListener;
 
+    private static SparseBooleanArray selectedItems;
+
     public GenresAdapter(Context context, List<String> genres) {
         this.context=context;
         this.genres = genres;
@@ -41,6 +44,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
 
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         favGenres=preferences.getStringSet("fav", new HashSet<String>());
+        selectedItems=new SparseBooleanArray();
     }
 
     public static void setOnItemClickListener(OnItemClickListener onItemClickListener) {
@@ -62,6 +66,14 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
     public void onBindViewHolder(final GenresAdapter.ViewHolder holder, int position) {
         final String genre = filteredGenres.get(position);
         holder.tvTitle.setText(genre);
+
+        if (selectedItems.get(position, false)){
+            holder.tvTitle.setTextColor(context.getResources().getColor(R.color.primary));
+            holder.ivIndicator.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvTitle.setTextColor(context.getResources().getColor(R.color.primary_text));
+            holder.ivIndicator.setVisibility(View.GONE);
+        }
 
         final GradientDrawable mDrawable = (GradientDrawable) holder.ivIcon.getBackground();
         if (favGenres.contains(genre)){
@@ -121,9 +133,10 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
         notifyDataSetChanged();
     }
 
-    public final static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public final class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         @InjectView(R.id.tvTitle) public TextView tvTitle;
         @InjectView(R.id.ivIcon) public ImageView ivIcon;
+        @InjectView(R.id.ivIndicator) public ImageView ivIndicator;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -134,6 +147,12 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
         @Override
         public void onClick(final View view) {
             onItemClickListener.onItemClick(getLayoutPosition(), view);
+            int pos=getLayoutPosition();
+            selectedItems.clear();
+            notifyDataSetChanged();
+            selectedItems.put(pos, true);
+            tvTitle.setTextColor(context.getResources().getColor(R.color.primary));
+            ivIndicator.setVisibility(View.VISIBLE);
         }
     }
 

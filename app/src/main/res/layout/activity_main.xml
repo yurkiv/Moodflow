@@ -11,6 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         />
 
     <android.support.design.widget.TabLayout
@@ -20,7 +22,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
-        app:layout_scrollFlags="scroll|enterAlways" />
+        app:layout_scrollFlags="scroll|enterAlways"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"
@@ -58,16 +62,15 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text=""
-                android:id="@+id/tv_item_name" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse"
+                android:id="@+id/tv_item_name"
+                android:maxLines="1"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse"
                 android:id="@+id/tv_title"
-                android:textColor="@android:color/white"
-                android:text=""
                 android:maxLines="1" />
         </LinearLayout>
 
@@ -105,7 +108,7 @@
             app:cpv_color="@android:color/white"
             app:cpv_thickness="8dp"/>
 
-        <tk.moodflow.android.ui.view.PlayPauseView
+        <tk.genresbox.android.ui.view.PlayPauseView
             android:id="@+id/play_pause_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

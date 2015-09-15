@@ -7,7 +7,7 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "tk.moodflow.android"
+        applicationId "tk.genresbox.android"
         minSdkVersion 16
         targetSdkVersion 22
         versionCode 1

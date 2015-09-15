@@ -2,11 +2,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="tk.moodflow.android.ui.fragments.GenresFragment">
+    tools:context="tk.genresbox.android.ui.fragments.GenresFragment">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvGenres"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
 
 </FrameLayout>

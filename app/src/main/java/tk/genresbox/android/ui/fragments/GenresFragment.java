@@ -1,4 +1,4 @@
-package tk.moodflow.android.ui.fragments;
+package tk.genresbox.android.ui.fragments;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -22,8 +22,8 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import tk.moodflow.android.R;
-import tk.moodflow.android.ui.adapter.GenresAdapter;
+import tk.genresbox.android.R;
+import tk.genresbox.android.ui.adapter.GenresAdapter;
 
 public class GenresFragment extends Fragment {
 

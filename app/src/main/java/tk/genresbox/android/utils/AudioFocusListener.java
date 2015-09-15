@@ -1,4 +1,4 @@
-package tk.moodflow.android.utils;
+package tk.genresbox.android.utils;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;

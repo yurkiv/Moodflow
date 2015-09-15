@@ -1,4 +1,4 @@
-package tk.moodflow.android.ui.view;
+package tk.genresbox.android.ui.view;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -18,7 +18,7 @@ import android.view.ViewOutlineProvider;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
-import tk.moodflow.android.R;
+import tk.genresbox.android.R;
 
 /**
  * Created by yurkiv on 16.05.2015.

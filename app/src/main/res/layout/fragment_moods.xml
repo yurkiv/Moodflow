@@ -2,13 +2,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="tk.moodflow.android.ui.fragments.FavouritesFragment">
+    tools:context="tk.genresbox.android.ui.fragments.FavouritesFragment">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvFavs"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:columnWidth="@dimen/column_width"
-        android:clipToPadding="false"/>
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
 
 </FrameLayout>

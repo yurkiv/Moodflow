@@ -1,4 +1,4 @@
-package tk.moodflow.android.ui.adapter;
+package tk.genresbox.android.ui.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -18,7 +18,7 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import tk.moodflow.android.R;
+import tk.genresbox.android.R;
 
 /**
  * Created by yurkiv on 21.05.2015.

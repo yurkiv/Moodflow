@@ -1,4 +1,4 @@
-package tk.moodflow.android.ui.fragments;
+package tk.genresbox.android.ui.fragments;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -18,8 +18,8 @@ import android.view.ViewGroup;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import tk.moodflow.android.R;
-import tk.moodflow.android.ui.adapter.FavouritesAdapter;
+import tk.genresbox.android.R;
+import tk.genresbox.android.ui.adapter.FavouritesAdapter;
 
 public class FavouritesFragment extends Fragment {
     private static final String FAV_KEY = "fav";

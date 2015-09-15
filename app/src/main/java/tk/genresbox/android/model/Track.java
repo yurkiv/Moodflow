@@ -1,4 +1,4 @@
-package tk.moodflow.android.model;
+package tk.genresbox.android.model;
 
 import com.google.gson.annotations.SerializedName;
 

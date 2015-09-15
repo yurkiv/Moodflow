@@ -1,4 +1,4 @@
-package tk.moodflow.android.ui.view;
+package tk.genresbox.android.ui.view;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -16,7 +16,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.Property;
 
-import tk.moodflow.android.R;
+import tk.genresbox.android.R;
 
 /**
  * Created by yurkiv on 16.05.2015.
