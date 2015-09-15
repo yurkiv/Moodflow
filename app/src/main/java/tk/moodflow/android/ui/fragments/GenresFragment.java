@@ -32,7 +32,7 @@ public class GenresFragment extends Fragment {
     @InjectView(R.id.rvGenres) protected RecyclerView rvGenres;
 
     private List<String> genres;
-    private GenresAdapter genresAdapter;
+    private static GenresAdapter genresAdapter;
     private OnGenreSelectionListener genreSelectionListener;
 
     public static GenresFragment newInstance(List<String> genresList) {
@@ -83,10 +83,8 @@ public class GenresFragment extends Fragment {
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        genresAdapter.notifyDataSetChanged();
+    public static void updateView(){
+        genresAdapter.updateGenres();
     }
 
     @Override

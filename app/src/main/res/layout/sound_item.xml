@@ -15,7 +15,10 @@
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:id="@+id/ivIcon"/>
+            android:id="@+id/ivIcon"
+            android:background="@drawable/circle"
+            android:src="@drawable/ic_star"
+            android:padding="8dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -26,12 +29,6 @@
             android:layout_weight="1"
             android:maxLines="1"
             android:layout_marginLeft="16dp" />
-
-        <com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch
-            android:id="@+id/pinFav"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="4dp" />
 
     </LinearLayout>
 

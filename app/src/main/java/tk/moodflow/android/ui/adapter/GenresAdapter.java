@@ -2,6 +2,7 @@ package tk.moodflow.android.ui.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -10,10 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
-import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,6 +27,7 @@ import tk.moodflow.android.R;
 public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder> {
 
     private static final String TAG="GenresAdapter";
+    private Context context;
     private List<String> genres;
     private List<String> filteredGenres;
     private Set<String> favGenres;
@@ -37,6 +35,7 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
     private static OnItemClickListener onItemClickListener;
 
     public GenresAdapter(Context context, List<String> genres) {
+        this.context=context;
         this.genres = genres;
         this.filteredGenres = genres;
 
@@ -62,38 +61,27 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
     @Override
     public void onBindViewHolder(final GenresAdapter.ViewHolder holder, int position) {
         final String genre = filteredGenres.get(position);
-        final boolean isFav=favGenres.contains(genre);
         holder.tvTitle.setText(genre);
-        TextDrawable drawable = TextDrawable.builder()
-                .buildRound(genre.substring(0,1).toUpperCase(), ColorGenerator.MATERIAL.getRandomColor());
-        holder.ivIcon.setImageDrawable(drawable);
 
-        holder.pinFav.post(new Runnable() {
-            @Override
-            public void run() {
-                if (isFav) {
-                    if (!holder.pinFav.isChecked()) {
-                        holder.pinFav.toggle();
-                    }
-                    Log.i(TAG, "contains genre:" + genre);
-                } else {
-                    if (holder.pinFav.isChecked()) {
-                        holder.pinFav.toggle();
-                        Log.i(TAG, "not contains genre:" + genre);
-                    }
-                }
-            }
-        });
+        final GradientDrawable mDrawable = (GradientDrawable) holder.ivIcon.getBackground();
+        if (favGenres.contains(genre)){
+            mDrawable.setColor(context.getResources().getColor(R.color.accent));
+        } else {
+            mDrawable.setColor(context.getResources().getColor(R.color.divider));
+        }
 
-        holder.pinFav.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
+        holder.ivIcon.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(boolean isChecked) {
-                if (isChecked){
-                    favGenres.add(genre);
-                    Log.i(TAG, "add genre:" + genre);
-                } else {
+            public void onClick(View v) {
+                if (favGenres.contains(genre)){
+                    mDrawable.setColor(context.getResources().getColor(R.color.divider));
                     favGenres.remove(genre);
                     Log.i(TAG, "remove genre:" + genre);
+
+                } else {
+                    mDrawable.setColor(context.getResources().getColor(R.color.accent));
+                    favGenres.add(genre);
+                    Log.i(TAG, "add genre:" + genre);
                 }
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putStringSet("fav", favGenres);
@@ -128,10 +116,14 @@ public class GenresAdapter extends RecyclerView.Adapter<GenresAdapter.ViewHolder
         return filteredGenres;
     }
 
+    public void updateGenres() {
+        this.favGenres=preferences.getStringSet("fav", new HashSet<String>());
+        notifyDataSetChanged();
+    }
+
     public final static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         @InjectView(R.id.tvTitle) public TextView tvTitle;
         @InjectView(R.id.ivIcon) public ImageView ivIcon;
-        @InjectView(R.id.pinFav) public MaterialAnimatedSwitch pinFav;
 
         public ViewHolder(View itemView) {
             super(itemView);

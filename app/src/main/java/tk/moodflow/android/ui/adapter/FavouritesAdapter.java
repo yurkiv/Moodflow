@@ -2,6 +2,7 @@ package tk.moodflow.android.ui.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -10,10 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
-import com.github.glomadrian.materialanimatedswitch.MaterialAnimatedSwitch;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,13 +26,15 @@ import tk.moodflow.android.R;
 public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.ViewHolder> {
 
     private static final String TAG="FavouritesAdapter";
-    private List<String> genres;
+    private Context context;
     private SharedPreferences preferences;
+    private List<String> genres;
     private static OnItemClickListener onItemClickListener;
 
     public FavouritesAdapter(Context context) {
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        genres=new ArrayList<>(preferences.getStringSet("fav", new HashSet<String>()));
+        this.context=context;
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        this.genres=new ArrayList<>(preferences.getStringSet("fav", new HashSet<String>()));
     }
 
     public static void setOnItemClickListener(OnItemClickListener onItemClickListener) {
@@ -44,7 +43,7 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.sound_item, parent, false);
+        View view=LayoutInflater.from(parent.getContext()).inflate(R.layout.sound_item, parent, false);
         return new ViewHolder(view);
     }
 
@@ -54,36 +53,25 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(final FavouritesAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(final FavouritesAdapter.ViewHolder holder, final int position) {
         final String genre = genres.get(position);
         holder.tvTitle.setText(genre);
-        TextDrawable drawable = TextDrawable.builder()
-                .buildRound(genre.substring(0, 1).toUpperCase(), ColorGenerator.MATERIAL.getRandomColor());
-        holder.ivIcon.setImageDrawable(drawable);
 
-        holder.pinFav.post(new Runnable() {
+        final GradientDrawable mDrawable = (GradientDrawable) holder.ivIcon.getBackground();
+        mDrawable.setColor(context.getResources().getColor(R.color.accent));
+
+        holder.ivIcon.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                if (!holder.pinFav.isChecked()) {
-                    holder.pinFav.toggle();
-                }
-                Log.i(TAG, "contains genre:" + genre);
+            public void onClick(View v) {
+                mDrawable.setColor(context.getResources().getColor(R.color.divider));
+                genres.remove(genre);
+                Log.i(TAG, "remove genre:" + genre);
+                notifyItemRemoved(position);
 
-            }
-        });
-
-        holder.pinFav.setOnCheckedChangeListener(new MaterialAnimatedSwitch.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(boolean isChecked) {
-                if (!isChecked) {
-                    genres.remove(genre);
-                    notifyDataSetChanged();
-                    Log.i(TAG, "remove genre:" + genre);
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putStringSet("fav", new HashSet<>(genres));
-                    editor.commit();
-                    Log.i(TAG, "put genres:" + genres);
-                }
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putStringSet("fav", new HashSet<String>(genres));
+                editor.commit();
+                Log.i(TAG, "put genres:" + genres);
             }
         });
     }
@@ -93,6 +81,23 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
         return super.getItemId(position);
     }
 
+    public void setFilter(String queryText) {
+        this.genres=new ArrayList<>(preferences.getStringSet("fav", new HashSet<String>()));
+        String filterPattern = queryText.toString().toLowerCase().trim();
+        List<String> filteredGenres = new ArrayList<>();
+        for (String item: genres) {
+            if (item.toLowerCase().contains(filterPattern))
+                filteredGenres.add(item);
+        }
+        genres=filteredGenres;
+        notifyDataSetChanged();
+    }
+
+    public void updateGenres() {
+        this.genres=new ArrayList<>(preferences.getStringSet("fav", new HashSet<String>()));
+        notifyDataSetChanged();
+    }
+
     public List<String> getGenres() {
         return genres;
     }
@@ -100,7 +105,6 @@ public class FavouritesAdapter extends RecyclerView.Adapter<FavouritesAdapter.Vi
     public final static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         @InjectView(R.id.tvTitle) public TextView tvTitle;
         @InjectView(R.id.ivIcon) public ImageView ivIcon;
-        @InjectView(R.id.pinFav) public MaterialAnimatedSwitch pinFav;
 
         public ViewHolder(View itemView) {
             super(itemView);

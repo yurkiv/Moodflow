@@ -88,6 +88,8 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
 
+        viewPager.addOnPageChangeListener(onPageChangeListener);
+
         mp = new MediaPlayer();
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mp.setOnCompletionListener(this);
@@ -131,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
             @Override
             public void failure(RetrofitError error) {
                 Log.d(TAG, "Failed call: " + error.toString());
+                progressBar.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -261,6 +264,15 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
         return genres;
     }
 
+    private List<String> getTopGenres(){
+        List<String> genreNames=Arrays.asList(new String[]{"80s", "Acoustic", "Alternative Rock", "Classical","Country","Electronic","Folk","Hip-Hop","Indie","Jazz","Pop","Reggae","Rock","Soul","Trance"});
+        List<String> genres=new ArrayList<>(genreNames.size());
+        for (String s:genreNames){
+            genres.add(s);
+        }
+        return genres;
+    }
+
     private class ViewPagerAdapter extends FragmentStatePagerAdapter {
         public ViewPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -269,9 +281,11 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return GenresFragment.newInstance(genres);
-                case 1:
                     return FavouritesFragment.newInstance();
+                case 1:
+                    return GenresFragment.newInstance(genres);
+                case 2:
+                    return GenresFragment.newInstance(getTopGenres());
                 default:
                     return null;
             }
@@ -279,19 +293,48 @@ public class MainActivity extends AppCompatActivity implements FavouritesFragmen
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Genres";
-                case 1:
                     return "Favourites";
+                case 1:
+                    return "Genres";
+                case 2:
+                    return "Top 15";
                 default:
                     return null;
             }
         }
     }
+
+    private ViewPager.OnPageChangeListener onPageChangeListener=new ViewPager.OnPageChangeListener() {
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            switch (position){
+                case 0:
+                    FavouritesFragment.updateView();
+                    break;
+                case 1:
+                    GenresFragment.updateView();
+                    break;
+                case 2:
+                    GenresFragment.updateView();
+                    break;
+            }
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+
+        }
+    };
 }
